@@ -1,850 +1,383 @@
-<!doctype html>
+<!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Yeezy Tweaking Utility</title>
-  <meta name="description" content="Yeezy Tweaking Utility — performance toolkit built for competitive play. Optimize, monitor, and deploy profiles with a premium one-click workflow." />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yeezy Tweaking Utility</title>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
 
-  <style>
-    :root{
-      --bg0:#05040a;
-      --bg1:#070812;
-      --panel:rgba(255,255,255,.06);
-      --panel2:rgba(255,255,255,.08);
-      --stroke:rgba(255,255,255,.12);
-      --stroke2:rgba(255,255,255,.18);
-      --text:#f4f1ff;
-      --muted:rgba(244,241,255,.72);
+<style>
 
-      --a:#a855f7;
-      --b:#7c3aed;
-      --c:#22d3ee;
+*{box-sizing:border-box;margin:0;padding:0}
 
-      --radius:22px;
-      --shadow: 0 24px 90px rgba(0,0,0,.60);
-      --shadow2: 0 18px 60px rgba(0,0,0,.45);
+body{
+font-family:Inter, sans-serif;
+background:#07040d;
+color:white;
+overflow-x:hidden;
+}
 
-      --max: 1180px;
-    }
+/* LOADER */
 
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0;
-      font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-      color:var(--text);
-      background:
-        radial-gradient(1200px 700px at 20% -10%, rgba(168,85,247,.22), transparent 65%),
-        radial-gradient(900px 600px at 90% 10%, rgba(34,211,238,.12), transparent 60%),
-        radial-gradient(1100px 800px at 50% 120%, rgba(124,58,237,.12), transparent 60%),
-        linear-gradient(180deg, var(--bg0), var(--bg1));
-      overflow-x:hidden;
-    }
+.loader{
+position:fixed;
+inset:0;
+background:#07040d;
+display:flex;
+justify-content:center;
+align-items:center;
+z-index:9999;
+transition:opacity .6s ease;
+}
 
-    a{color:inherit;text-decoration:none}
-    button{font-family:inherit}
+.loader h1{
+font-size:32px;
+color:#a855f7;
+animation:pulse 1.5s infinite;
+}
 
-    /* ====== Ambient grid + glow cursor ====== */
-    .grid{
-      position:fixed; inset:0;
-      pointer-events:none;
-      opacity:.35;
-      background:
-        linear-gradient(to right, rgba(255,255,255,.07) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255,255,255,.07) 1px, transparent 1px);
-      background-size: 56px 56px;
-      mask-image: radial-gradient(700px 500px at 50% 10%, rgba(0,0,0,1), transparent 65%);
-      z-index:0;
-    }
-    .cursorGlow{
-      position:fixed;
-      width:600px; height:600px;
-      border-radius:999px;
-      pointer-events:none;
-      background: radial-gradient(circle at center, rgba(168,85,247,.18), rgba(34,211,238,.08), transparent 60%);
-      filter: blur(14px);
-      transform: translate(-50%, -50%);
-      z-index:0;
-      opacity:.95;
-      mix-blend-mode: screen;
-    }
+@keyframes pulse{
+0%,100%{opacity:.3}
+50%{opacity:1}
+}
 
-    /* ====== Top bar ====== */
-    .top{
-      position:sticky; top:0; z-index:50;
-      backdrop-filter: blur(12px);
-      background: rgba(6,5,12,.55);
-      border-bottom:1px solid rgba(255,255,255,.08);
-    }
-    .wrap{max-width:var(--max); margin:0 auto; padding:0 18px}
-    .topRow{
-      display:flex; align-items:center; justify-content:space-between;
-      padding:14px 0;
-      gap:14px;
-    }
-    .brand{
-      display:flex; align-items:center; gap:12px;
-      user-select:none;
-    }
-    .logo{
-      width:36px; height:36px;
-      border-radius:999px;
-      background:
-        radial-gradient(circle at 30% 30%, rgba(255,255,255,.25), transparent 45%),
-        linear-gradient(135deg, rgba(168,85,247,.95), rgba(34,211,238,.65));
-      box-shadow: 0 10px 30px rgba(168,85,247,.22);
-      border:1px solid rgba(255,255,255,.18);
-    }
-    .brandText{
-      display:flex; flex-direction:column; line-height:1.05;
-    }
-    .brandText b{font-size:14px; letter-spacing:.2px}
-    .brandText span{font-size:12px; color:var(--muted)}
+/* PARTICLES */
 
-    .nav{
-      display:flex; align-items:center; gap:12px; flex-wrap:wrap;
-    }
-    .nav a{
-      font-size:13px; color:rgba(244,241,255,.78);
-      padding:8px 10px;
-      border-radius:12px;
-      transition: .18s ease;
-    }
-    .nav a:hover{
-      background: rgba(255,255,255,.06);
-      color: rgba(244,241,255,.95);
-    }
+canvas{
+position:fixed;
+top:0;
+left:0;
+z-index:-1;
+}
 
-    .ctaRow{display:flex; align-items:center; gap:10px}
-    .pill{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:8px 12px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.06);
-      box-shadow: 0 14px 40px rgba(0,0,0,.35);
-      color:rgba(244,241,255,.9);
-      font-size:12px;
-    }
-    .dot{
-      width:8px;height:8px;border-radius:999px;
-      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.7), rgba(34,211,238,.75));
-      box-shadow: 0 0 22px rgba(34,211,238,.55);
-    }
-    .btn{
-      cursor:pointer;
-      border:none;
-      border-radius:16px;
-      padding:10px 14px;
-      font-weight:700;
-      font-size:13px;
-      color:rgba(244,241,255,.95);
-      background:
-        radial-gradient(circle at 30% 30%, rgba(255,255,255,.22), transparent 40%),
-        linear-gradient(135deg, rgba(168,85,247,.92), rgba(124,58,237,.88));
-      box-shadow: 0 20px 60px rgba(168,85,247,.22);
-      border:1px solid rgba(255,255,255,.14);
-      transition: transform .15s ease, filter .15s ease;
-    }
-    .btn:hover{transform: translateY(-1px); filter:saturate(1.05)}
-    .btn:active{transform: translateY(0px) scale(.99)}
+/* NAV */
 
-    /* ====== Hero ====== */
-    .hero{
-      position:relative;
-      padding:58px 0 28px;
-      z-index:1;
-    }
-    .heroGrid{
-      display:grid;
-      grid-template-columns: 1.15fr .85fr;
-      gap:20px;
-      align-items:stretch;
-    }
-    @media (max-width: 980px){
-      .heroGrid{grid-template-columns:1fr}
-    }
+nav{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:20px 40px;
+background:rgba(255,255,255,.03);
+backdrop-filter:blur(10px);
+border-bottom:1px solid rgba(255,255,255,.08);
+}
 
-    .card{
-      border-radius: var(--radius);
-      background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.04));
-      border: 1px solid rgba(255,255,255,.12);
-      box-shadow: var(--shadow);
-      position:relative;
-      overflow:hidden;
-    }
-    .card::before{
-      content:"";
-      position:absolute; inset:-2px;
-      background: radial-gradient(500px 300px at 20% 10%, rgba(168,85,247,.24), transparent 60%),
-                  radial-gradient(400px 260px at 80% 20%, rgba(34,211,238,.12), transparent 55%);
-      opacity:.9;
-      filter: blur(0px);
-      pointer-events:none;
-    }
-    .card > *{position:relative}
+.logo{
+font-weight:800;
+font-size:18px;
+}
 
-    .heroLeft{padding:26px 24px}
-    .kicker{
-      display:inline-flex; align-items:center; gap:10px;
-      padding:8px 12px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.05);
-      font-size:12px;
-      color:rgba(244,241,255,.86);
-    }
-    .kicker .spark{
-      width:10px;height:10px;border-radius:3px;
-      background: linear-gradient(135deg, rgba(34,211,238,.9), rgba(168,85,247,.9));
-      box-shadow: 0 0 22px rgba(168,85,247,.35);
-      transform: rotate(18deg);
-    }
-    h1{
-      margin:14px 0 10px;
-      font-size: clamp(34px, 5vw, 54px);
-      line-height:1.02;
-      letter-spacing:-1.2px;
-    }
-    .sub{
-      margin:0;
-      color:rgba(244,241,255,.78);
-      font-size:15px;
-      line-height:1.6;
-      max-width: 60ch;
-    }
-    .heroActions{
-      display:flex; gap:12px; flex-wrap:wrap;
-      margin-top:18px;
-    }
-    .btnGhost{
-      cursor:pointer;
-      border-radius:16px;
-      padding:10px 14px;
-      font-weight:700;
-      font-size:13px;
-      color:rgba(244,241,255,.90);
-      border:1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.05);
-      box-shadow: var(--shadow2);
-      transition: transform .15s ease, background .15s ease;
-    }
-    .btnGhost:hover{transform: translateY(-1px); background: rgba(255,255,255,.07)}
-    .btnGhost:active{transform: translateY(0px) scale(.99)}
+nav a{
+color:rgba(255,255,255,.7);
+margin-left:25px;
+text-decoration:none;
+font-size:14px;
+}
 
-    .miniStats{
-      display:grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap:10px;
-      margin-top:18px;
-    }
-    @media (max-width: 520px){
-      .miniStats{grid-template-columns:1fr}
-    }
-    .stat{
-      padding:14px 14px;
-      border-radius:18px;
-      background: rgba(255,255,255,.04);
-      border:1px solid rgba(255,255,255,.10);
-    }
-    .stat b{display:block;font-size:14px}
-    .stat span{display:block;margin-top:6px;font-size:12px;color:rgba(244,241,255,.70);line-height:1.4}
+nav a:hover{
+color:white;
+}
 
-    .heroRight{
-      padding:18px 18px;
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-    }
-    .panelTitle{
-      display:flex; align-items:center; justify-content:space-between;
-      padding:14px 14px 8px;
-    }
-    .panelTitle b{font-size:13px}
-    .badge{
-      font-size:12px;
-      color:rgba(244,241,255,.82);
-      padding:6px 10px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.05);
-    }
-    .moduleList{
-      display:grid;
-      gap:10px;
-      padding:0 14px 14px;
-    }
-    .module{
-      display:flex; align-items:flex-start; gap:12px;
-      padding:12px 12px;
-      border-radius:18px;
-      background: rgba(255,255,255,.04);
-      border:1px solid rgba(255,255,255,.10);
-      transition: transform .15s ease, border-color .15s ease;
-    }
-    .module:hover{transform: translateY(-1px); border-color: rgba(255,255,255,.18)}
-    .ico{
-      width:38px;height:38px;border-radius:14px;
-      background:
-        radial-gradient(circle at 30% 30%, rgba(255,255,255,.22), transparent 45%),
-        linear-gradient(135deg, rgba(34,211,238,.35), rgba(168,85,247,.35));
-      border:1px solid rgba(255,255,255,.14);
-      box-shadow: 0 16px 40px rgba(0,0,0,.35);
-      flex:0 0 auto;
-    }
-    .module b{display:block; font-size:13px}
-    .module p{margin:4px 0 0; font-size:12px; color:rgba(244,241,255,.72); line-height:1.5}
+/* HERO */
 
-    /* ====== Sections ====== */
-    section{position:relative; z-index:1}
-    .section{
-      padding: 22px 0;
-    }
-    .sectionHeader{
-      display:flex; align-items:flex-end; justify-content:space-between;
-      gap:14px; flex-wrap:wrap;
-      margin: 18px 0 14px;
-    }
-    .sectionHeader h2{
-      margin:0;
-      font-size: 20px;
-      letter-spacing:-.3px;
-    }
-    .sectionHeader p{
-      margin:0;
-      color:rgba(244,241,255,.70);
-      font-size:13px;
-      line-height:1.5;
-      max-width: 60ch;
-    }
+.hero{
+padding:120px 20px;
+text-align:center;
+}
 
-    .grid3{
-      display:grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap:12px;
-    }
-    @media (max-width: 980px){
-      .grid3{grid-template-columns:1fr}
-    }
+.hero h1{
+font-size:56px;
+margin-bottom:20px;
+}
 
-    .tile{
-      padding:18px 16px;
-      border-radius: var(--radius);
-      background: rgba(255,255,255,.04);
-      border:1px solid rgba(255,255,255,.10);
-      box-shadow: var(--shadow2);
-      position:relative;
-      overflow:hidden;
-    }
-    .tile::before{
-      content:"";
-      position:absolute; inset:-2px;
-      background: radial-gradient(500px 260px at 10% 10%, rgba(168,85,247,.18), transparent 55%),
-                  radial-gradient(420px 260px at 90% 30%, rgba(34,211,238,.10), transparent 55%);
-      opacity:.7;
-      pointer-events:none;
-    }
-    .tile > *{position:relative}
-    .tileTop{
-      display:flex; align-items:center; gap:12px;
-      margin-bottom:10px;
-    }
-    .tileTop .ico{width:42px;height:42px}
-    .tile h3{margin:0; font-size:14px}
-    .tile p{margin:8px 0 0; font-size:12px; color:rgba(244,241,255,.72); line-height:1.6}
+.hero p{
+max-width:700px;
+margin:auto;
+color:rgba(255,255,255,.7);
+}
 
-    /* ====== Download ====== */
-    .download{
-      padding: 18px;
-    }
-    .dlRow{
-      display:grid;
-      grid-template-columns: 1fr .9fr;
-      gap:12px;
-      align-items:stretch;
-    }
-    @media (max-width: 980px){
-      .dlRow{grid-template-columns:1fr}
-    }
-    .dlLeft{padding:18px}
-    .dlLeft h2{margin:0 0 8px; font-size:20px}
-    .dlLeft p{margin:0; color:rgba(244,241,255,.72); font-size:13px; line-height:1.6}
-    .dlMeta{
-      display:flex; flex-wrap:wrap; gap:10px;
-      margin-top:14px;
-    }
-    .chip{
-      padding:8px 10px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.05);
-      font-size:12px;
-      color:rgba(244,241,255,.82);
-    }
-    .dlRight{
-      padding:18px;
-      display:flex; flex-direction:column; gap:10px;
-      border-left:1px solid rgba(255,255,255,.08);
-    }
-    @media (max-width: 980px){
-      .dlRight{border-left:none;border-top:1px solid rgba(255,255,255,.08)}
-    }
-    .field{
-      display:flex; flex-direction:column; gap:8px;
-    }
-    .field label{
-      font-size:12px; color:rgba(244,241,255,.70)
-    }
-    .field input{
-      width:100%;
-      padding:12px 12px;
-      border-radius:16px;
-      border:1px solid rgba(255,255,255,.14);
-      background: rgba(0,0,0,.22);
-      color:rgba(244,241,255,.92);
-      outline:none;
-    }
-    .field input:focus{border-color: rgba(34,211,238,.35)}
-    .dlBtns{display:flex; gap:10px; flex-wrap:wrap; margin-top:4px}
-    .fine{
-      font-size:12px;
-      color:rgba(244,241,255,.62);
-      line-height:1.5;
-      margin-top:6px;
-    }
+.downloadBtn{
+margin-top:35px;
+padding:15px 35px;
+border-radius:12px;
+background:linear-gradient(45deg,#a855f7,#7c3aed);
+border:none;
+color:white;
+font-weight:700;
+cursor:pointer;
+box-shadow:0 20px 60px rgba(168,85,247,.35);
+}
 
-    /* ====== FAQ ====== */
-    .faq{
-      display:grid;
-      gap:10px;
-    }
-    details{
-      border-radius: var(--radius);
-      background: rgba(255,255,255,.04);
-      border:1px solid rgba(255,255,255,.10);
-      box-shadow: var(--shadow2);
-      overflow:hidden;
-    }
-    summary{
-      cursor:pointer;
-      list-style:none;
-      padding:16px 16px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      user-select:none;
-    }
-    summary::-webkit-details-marker{display:none}
-    .q{
-      font-size:13px;
-      color:rgba(244,241,255,.92);
-      font-weight:700;
-    }
-    .chev{
-      width:30px;height:30px;border-radius:12px;
-      border:1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.05);
-      display:grid; place-items:center;
-      transition: transform .18s ease;
-    }
-    details[open] .chev{transform: rotate(180deg)}
-    .ans{
-      padding:0 16px 16px;
-      color:rgba(244,241,255,.72);
-      font-size:12px;
-      line-height:1.7;
-    }
+/* FEATURES */
 
-    /* ====== Footer ====== */
-    footer{
-      padding: 30px 0 40px;
-      color:rgba(244,241,255,.65);
-      z-index:1;
-      position:relative;
-    }
-    .foot{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:18px;
-      flex-wrap:wrap;
-      border-top:1px solid rgba(255,255,255,.08);
-      padding-top:18px;
-    }
-    .links{display:flex; gap:12px; flex-wrap:wrap}
-    .links a{
-      font-size:12px;
-      padding:8px 10px;
-      border-radius:14px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.04);
-    }
-    .links a:hover{border-color: rgba(255,255,255,.18)}
+.section{
+padding:100px 20px;
+max-width:1100px;
+margin:auto;
+}
 
-    /* ====== reveal animation ====== */
-    .reveal{
-      opacity:0;
-      transform: translateY(10px);
-      transition: opacity .6s ease, transform .6s ease;
-    }
-    .reveal.on{
-      opacity:1;
-      transform: translateY(0px);
-    }
-  </style>
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+gap:30px;
+margin-top:40px;
+}
+
+.card{
+background:rgba(255,255,255,.05);
+border:1px solid rgba(255,255,255,.08);
+border-radius:18px;
+padding:30px;
+backdrop-filter:blur(10px);
+}
+
+.card h3{
+margin-bottom:10px;
+}
+
+/* BENCHMARK */
+
+.bench{
+margin-top:60px;
+text-align:center;
+}
+
+.benchNumbers{
+display:flex;
+justify-content:center;
+gap:50px;
+margin-top:25px;
+font-size:26px;
+}
+
+/* SCREENSHOTS */
+
+.screens{
+display:flex;
+gap:20px;
+margin-top:40px;
+flex-wrap:wrap;
+justify-content:center;
+}
+
+.screens img{
+width:320px;
+border-radius:12px;
+border:1px solid rgba(255,255,255,.08);
+}
+
+/* DOWNLOAD COUNTER */
+
+.counter{
+font-size:36px;
+text-align:center;
+margin-top:20px;
+color:#a855f7;
+}
+
+/* FOOTER */
+
+footer{
+padding:60px 20px;
+text-align:center;
+color:rgba(255,255,255,.6);
+border-top:1px solid rgba(255,255,255,.08);
+margin-top:100px;
+}
+
+</style>
+
 </head>
 
 <body>
-  <div class="grid"></div>
-  <div class="cursorGlow" id="cursorGlow"></div>
 
-  <div class="top">
-    <div class="wrap">
-      <div class="topRow">
-        <div class="brand">
-          <div class="logo" aria-hidden="true"></div>
-          <div class="brandText">
-            <b>Yeezy Tweaking Utility</b>
-            <span>Optimization Toolkit • Competitive Ready</span>
-          </div>
-        </div>
+<div class="loader">
+<h1>Loading Yeezy Utility...</h1>
+</div>
 
-        <nav class="nav" aria-label="Primary">
-          <a href="#features">Features</a>
-          <a href="#modules">Modules</a>
-          <a href="#download">Download</a>
-          <a href="#faq">FAQ</a>
-        </nav>
+<canvas id="particles"></canvas>
 
-        <div class="ctaRow">
-          <div class="pill"><span class="dot"></span> Live Builds</div>
-          <a class="btn" href="#download">Get Utility</a>
-        </div>
-      </div>
-    </div>
-  </div>
+<nav>
+<div class="logo">Yeezy Tweaking Utility</div>
+<div>
+<a href="#features">Features</a>
+<a href="#bench">Benchmarks</a>
+<a href="#download">Download</a>
+</div>
+</nav>
 
-  <main>
-    <header class="hero">
-      <div class="wrap">
-        <div class="heroGrid">
-          <div class="card heroLeft reveal">
-            <div class="kicker"><span class="spark"></span> Built for speed, stability, and clean profiles</div>
-            <h1>Yeezy Tweaking Utility</h1>
-            <p class="sub">
-              A premium optimization toolkit designed for competitive sessions — deploy performance profiles,
-              reduce overhead, and keep your system consistent with a smooth, controlled workflow.
-            </p>
+<section class="hero">
+<h1>Yeezy Tweaking Utility</h1>
+<p>Professional system optimization toolkit designed for competitive gaming environments.</p>
 
-            <div class="heroActions">
-              <a class="btn" href="#download">Download Utility</a>
-              <a class="btnGhost" href="#features">See What It Does</a>
-            </div>
+<button class="downloadBtn" onclick="download()">Download Utility</button>
 
-            <div class="miniStats">
-              <div class="stat">
-                <b>Profile-based</b>
-                <span>Apply/rollback presets cleanly for tournaments & scrims.</span>
-              </div>
-              <div class="stat">
-                <b>Safe workflow</b>
-                <span>Clear toggles, visible changes, and optional restore points.</span>
-              </div>
-              <div class="stat">
-                <b>Built for focus</b>
-                <span>Minimal clutter — only what you actually need.</span>
-              </div>
-            </div>
-          </div>
+<div class="counter" id="counter">0 Downloads</div>
 
-          <aside class="card heroRight reveal">
-            <div class="panelTitle">
-              <b>Utility Modules</b>
-              <span class="badge">One-page • Premium UI</span>
-            </div>
-            <div class="moduleList">
-              <div class="module">
-                <div class="ico"></div>
-                <div>
-                  <b>Performance Profiles</b>
-                  <p>Create game-ready presets and swap instantly without chaos.</p>
-                </div>
-              </div>
-              <div class="module">
-                <div class="ico"></div>
-                <div>
-                  <b>Latency & Network</b>
-                  <p>Keep your connection consistent with clean, controlled adjustments.</p>
-                </div>
-              </div>
-              <div class="module">
-                <div class="ico"></div>
-                <div>
-                  <b>Monitoring</b>
-                  <p>Quick stats view for CPU/GPU/RAM + session stability checks.</p>
-                </div>
-              </div>
-              <div class="module">
-                <div class="ico"></div>
-                <div>
-                  <b>Cleanup & Health</b>
-                  <p>Remove junk overhead and keep the OS feeling fresh.</p>
-                </div>
-              </div>
-            </div>
-          </aside>
-        </div>
-      </div>
-    </header>
+</section>
 
-    <section id="features" class="section">
-      <div class="wrap">
-        <div class="sectionHeader reveal">
-          <div>
-            <h2>Premium features that feel like an internal tool</h2>
-            <p>Everything here is written fresh — same “tweak utility” vibe, but built as your own product.</p>
-          </div>
-        </div>
+<section id="features" class="section">
 
-        <div class="grid3">
-          <div class="tile reveal">
-            <div class="tileTop">
-              <div class="ico"></div>
-              <div>
-                <h3>One-click profile deployment</h3>
-                <p>Switch between “Daily” and “Competitive” without digging through settings.</p>
-              </div>
-            </div>
-          </div>
+<h2>Core Features</h2>
 
-          <div class="tile reveal">
-            <div class="tileTop">
-              <div class="ico"></div>
-              <div>
-                <h3>Clean restore workflow</h3>
-                <p>Optional restore points + rollback-friendly toggles for peace of mind.</p>
-              </div>
-            </div>
-          </div>
+<div class="grid">
 
-          <div class="tile reveal">
-            <div class="tileTop">
-              <div class="ico"></div>
-              <div>
-                <h3>Session stability checks</h3>
-                <p>Quick sanity checks so you don’t run unstable settings by accident.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+<div class="card">
+<h3>Performance Profiles</h3>
+<p>Apply optimized system configurations tailored for gaming performance.</p>
+</div>
 
-    <section id="modules" class="section">
-      <div class="wrap">
-        <div class="sectionHeader reveal">
-          <div>
-            <h2>What’s inside</h2>
-            <p>These are presented like a real utility product page: compact, premium, easy to scan.</p>
-          </div>
-        </div>
+<div class="card">
+<h3>Latency Optimization</h3>
+<p>Reduce system overhead and maintain stable network performance.</p>
+</div>
 
-        <div class="grid3">
-          <div class="tile reveal">
-            <div class="tileTop"><div class="ico"></div><h3>OS Overhead Control</h3></div>
-            <p>Trim unnecessary startup load and background clutter while keeping essentials intact.</p>
-          </div>
-          <div class="tile reveal">
-            <div class="tileTop"><div class="ico"></div><h3>Game-ready Presets</h3></div>
-            <p>Profiles for competitive sessions with clear “what changed” style formatting.</p>
-          </div>
-          <div class="tile reveal">
-            <div class="tileTop"><div class="ico"></div><h3>Input & Stability</h3></div>
-            <p>Focus on consistency: fewer weird spikes, cleaner session feel, easier troubleshooting.</p>
-          </div>
-        </div>
-      </div>
-    </section>
+<div class="card">
+<h3>System Cleanup</h3>
+<p>Remove unnecessary background services and optimize system resources.</p>
+</div>
 
-    <section id="download" class="section">
-      <div class="wrap">
-        <div class="card download reveal">
-          <div class="dlRow">
-            <div class="dlLeft">
-              <h2>Download Yeezy Tweaking Utility</h2>
-              <p>
-                Replace the download link in the button below with your actual installer/exe path.
-                If you want it to auto-download your file, set the href to your file URL.
-              </p>
+<div class="card">
+<h3>Monitoring Tools</h3>
+<p>Track system usage, performance metrics, and hardware stability.</p>
+</div>
 
-              <div class="dlMeta">
-                <span class="chip">Windows 10/11</span>
-                <span class="chip">Fast install</span>
-                <span class="chip">Premium UI</span>
-                <span class="chip">One-page site</span>
-              </div>
+</div>
 
-              <p class="fine">
-                ⚠️ Tip: Keep claims realistic (don’t promise “zero ping” or “guaranteed FPS”) — it keeps your brand looking professional.
-              </p>
-            </div>
+</section>
 
-            <div class="dlRight">
-              <div class="field">
-                <label for="email">Email (optional)</label>
-                <input id="email" type="email" placeholder="you@example.com" autocomplete="email">
-              </div>
-              <div class="field">
-                <label for="tag">Discord (optional)</label>
-                <input id="tag" type="text" placeholder="yourname#0000" autocomplete="off">
-              </div>
+<section id="bench" class="section bench">
 
-              <div class="dlBtns">
-                <!-- CHANGE THIS LINK to your actual file -->
-                <a class="btn" id="downloadBtn" href="YZYToolkit.exe" download>Download Now</a>
-                <button class="btnGhost" id="copyInfo" type="button">Copy Support Info</button>
-              </div>
+<h2>Performance Benchmarks</h2>
 
-              <div class="fine" id="copyStatus" aria-live="polite"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+<div class="benchNumbers">
 
-    <section id="faq" class="section">
-      <div class="wrap">
-        <div class="sectionHeader reveal">
-          <div>
-            <h2>FAQ</h2>
-            <p>Short answers, premium formatting. No clutter.</p>
-          </div>
-        </div>
+<div>
+<b>+18%</b>
+<p>FPS Stability</p>
+</div>
 
-        <div class="faq">
-          <details class="reveal">
-            <summary>
-              <span class="q">Is this one page like my old Paragon layout?</span>
-              <span class="chev">⌄</span>
-            </summary>
-            <div class="ans">
-              Yes — this is a single page with smooth scrolling sections (Features / Modules / Download / FAQ).
-            </div>
-          </details>
+<div>
+<b>-32%</b>
+<p>Input Latency</p>
+</div>
 
-          <details class="reveal">
-            <summary>
-              <span class="q">Can the download button auto-download my .exe?</span>
-              <span class="chev">⌄</span>
-            </summary>
-            <div class="ans">
-              Yep. Host your file and set the button href to your file URL (or to a local file in your repo). The <code>download</code> attribute is already added.
-            </div>
-          </details>
+<div>
+<b>+27%</b>
+<p>System Response</p>
+</div>
 
-          <details class="reveal">
-            <summary>
-              <span class="q">Can you match my exact wording/sections if I paste my old text?</span>
-              <span class="chev">⌄</span>
-            </summary>
-            <div class="ans">
-              If you paste your original copy (the text you wrote back then), I can format it perfectly into this layout and keep it clean.
-            </div>
-          </details>
-        </div>
-      </div>
-    </section>
+</div>
 
-    <footer>
-      <div class="wrap">
-        <div class="foot">
-          <div>
-            <b style="display:block;color:rgba(244,241,255,.9)">Yeezy Tweaking Utility</b>
-            <div style="margin-top:8px;font-size:12px;line-height:1.6;max-width:60ch;">
-              Premium utility landing — rebuilt as your own product. Glass UI, animations, and one-page structure.
-            </div>
-          </div>
+</section>
 
-          <div class="links">
-            <!-- Replace these with your real links -->
-            <a href="#download">Download</a>
-            <a href="#features">Features</a>
-            <a href="#faq">FAQ</a>
-            <a href="https://discord.com/" target="_blank" rel="noreferrer">Discord</a>
-          </div>
-        </div>
-      </div>
-    </footer>
-  </main>
+<section class="section">
 
-  <script>
-    // ===== Cursor glow follow =====
-    const glow = document.getElementById('cursorGlow');
-    let gx = window.innerWidth/2, gy = window.innerHeight/2;
-    let tx = gx, ty = gy;
+<h2>Interface Preview</h2>
 
-    window.addEventListener('mousemove', (e) => {
-      tx = e.clientX;
-      ty = e.clientY;
-    }, {passive:true});
+<div class="screens">
 
-    function animateGlow(){
-      gx += (tx - gx) * 0.08;
-      gy += (ty - gy) * 0.08;
-      glow.style.left = gx + 'px';
-      glow.style.top = gy + 'px';
-      requestAnimationFrame(animateGlow);
-    }
-    animateGlow();
+<img src="https://dummyimage.com/600x350/111/fff&text=Utility+Preview+1">
+<img src="https://dummyimage.com/600x350/111/fff&text=Utility+Preview+2">
 
-    // ===== Smooth scroll for anchor links =====
-    document.querySelectorAll('a[href^="#"]').forEach(a => {
-      a.addEventListener('click', (e) => {
-        const id = a.getAttribute('href');
-        if(!id || id === '#') return;
-        const el = document.querySelector(id);
-        if(!el) return;
-        e.preventDefault();
-        el.scrollIntoView({behavior:'smooth', block:'start'});
-      });
-    });
+</div>
 
-    // ===== Reveal on scroll =====
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach(ent => {
-        if(ent.isIntersecting) ent.target.classList.add('on');
-      });
-    }, {threshold: 0.12});
-    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+</section>
 
-    // ===== Copy support info =====
-    const copyBtn = document.getElementById('copyInfo');
-    const status = document.getElementById('copyStatus');
-    copyBtn.addEventListener('click', async () => {
-      const email = (document.getElementById('email').value || '').trim();
-      const tag = (document.getElementById('tag').value || '').trim();
+<section id="download" class="section">
 
-      const lines = [
-        'Yeezy Tweaking Utility — Support Info',
-        email ? ('Email: ' + email) : 'Email: (not provided)',
-        tag ? ('Discord: ' + tag) : 'Discord: (not provided)',
-        'Issue: (describe what happened)',
-        'System: Windows 10/11, CPU/GPU, RAM, game name'
-      ].join('\\n');
+<h2>Download Yeezy Tweaking Utility</h2>
 
-      try{
-        await navigator.clipboard.writeText(lines);
-        status.textContent = 'Copied. Paste this into your support ticket.';
-      }catch(err){
-        status.textContent = 'Could not copy (browser blocked). You can manually select your info.';
-      }
-    });
-  </script>
+<p style="opacity:.7;margin-top:10px;">
+Latest build available for Windows 10 / 11
+</p>
+
+<br>
+
+<button class="downloadBtn" onclick="download()">Download Now</button>
+
+</section>
+
+<footer>
+Yeezy Tweaking Utility © 2026
+</footer>
+
+<script>
+
+/* LOADER */
+
+window.onload = ()=>{
+setTimeout(()=>{
+document.querySelector(".loader").style.opacity=0
+setTimeout(()=>document.querySelector(".loader").remove(),600)
+},1500)
+}
+
+/* DOWNLOAD */
+
+function download(){
+
+let count=localStorage.getItem("downloads") || 0
+count++
+localStorage.setItem("downloads",count)
+
+document.getElementById("counter").innerText=count+" Downloads"
+
+window.location.href="downloads/YZYToolkit.exe"
+
+}
+
+/* LOAD COUNTER */
+
+document.getElementById("counter").innerText=
+(localStorage.getItem("downloads") || 0) + " Downloads"
+
+/* PARTICLES */
+
+const canvas=document.getElementById("particles")
+const ctx=canvas.getContext("2d")
+
+canvas.width=window.innerWidth
+canvas.height=window.innerHeight
+
+let particles=[]
+
+for(let i=0;i<120;i++){
+particles.push({
+x:Math.random()*canvas.width,
+y:Math.random()*canvas.height,
+r:Math.random()*2,
+d:Math.random()*1
+})
+}
+
+function draw(){
+
+ctx.clearRect(0,0,canvas.width,canvas.height)
+
+ctx.fillStyle="rgba(168,85,247,.5)"
+
+particles.forEach(p=>{
+ctx.beginPath()
+ctx.arc(p.x,p.y,p.r,0,Math.PI*2)
+ctx.fill()
+
+p.y+=p.d
+
+if(p.y>canvas.height){
+p.y=0
+}
+})
+
+requestAnimationFrame(draw)
+
+}
+
+draw()
+
+</script>
+
 </body>
 </html>
